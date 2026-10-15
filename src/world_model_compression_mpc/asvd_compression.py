@@ -51,6 +51,19 @@ def _transpose(mat: Matrix) -> Matrix:
     return [[mat[i][j] for i in range(len(mat))] for j in range(len(mat[0]))]
 
 
+def _orthogonalize(vec: Vector, basis: Sequence[Vector]) -> Tuple[Vector, float]:
+    out = list(vec)
+    dim = len(out)
+    for _ in range(2):
+        for b in basis:
+            proj = sum(out[j] * b[j] for j in range(dim))
+            out = [out[j] - proj * b[j] for j in range(dim)]
+    norm = math.sqrt(sum(x * x for x in out))
+    if norm > 1e-12:
+        return [x / norm for x in out], norm
+    return out, 0.0
+
+
 def _truncated_svd_power(mat: Matrix, rank: int, iters: int = 60) -> Tuple[Matrix, Vector, Matrix]:
     """Computes top-r singular triplets (U_r, S_r, V_r^T) via deflated power iteration."""
     d_out = len(mat)
@@ -61,35 +74,37 @@ def _truncated_svd_power(mat: Matrix, rank: int, iters: int = 60) -> Tuple[Matri
     vt_rows: List[Vector] = []
 
     for r_idx in range(rank):
-        # Deterministic non-zero initial vector
-        v = [math.cos(0.7 * (j + 1) + 1.3 * (r_idx + 1)) for j in range(d_in)]
-        v_norm = math.sqrt(sum(x * x for x in v)) or 1.0
-        v = [x / v_norm for x in v]
+        # Deterministic non-zero initial vector orthogonalized against previous right singular vectors
+        v_init = [math.cos(0.7 * (j + 1) + 1.3 * (r_idx + 1)) for j in range(d_in)]
+        v, v_norm = _orthogonalize(v_init, vt_rows)
+        if v_norm <= 1e-12:
+            for e_idx in range(d_in):
+                cand = [1.0 if j == e_idx else 0.0 for j in range(d_in)]
+                v, v_norm = _orthogonalize(cand, vt_rows)
+                if v_norm > 1e-12:
+                    break
 
+        res_t = _transpose(residual)
         for _ in range(iters):
-            u = _mat_vec(residual, v)
-            u_norm = math.sqrt(sum(x * x for x in u))
+            u_raw = _mat_vec(residual, v)
+            u, u_norm = _orthogonalize(u_raw, u_cols)
             if u_norm < 1e-12:
                 break
-            u = [x / u_norm for x in u]
-            res_t = _transpose(residual)
-            v_next = _mat_vec(res_t, u)
-            # Orthogonalize against previously found right singular vectors
-            for prev_v in vt_rows:
-                proj = sum(v_next[j] * prev_v[j] for j in range(d_in))
-                v_next = [v_next[j] - proj * prev_v[j] for j in range(d_in)]
-            v_norm = math.sqrt(sum(x * x for x in v_next))
+            v_raw = _mat_vec(res_t, u)
+            v_next, v_norm = _orthogonalize(v_raw, vt_rows)
             if v_norm < 1e-12:
                 break
-            v = [x / v_norm for x in v_next]
+            v = v_next
 
         av = _mat_vec(residual, v)
-        sigma = math.sqrt(sum(x * x for x in av))
+        u, sigma = _orthogonalize(av, u_cols)
         if sigma < 1e-12:
-            u = [1.0 if i == (r_idx % d_out) else 0.0 for i in range(d_out)]
+            for e_idx in range(d_out):
+                cand = [1.0 if i == e_idx else 0.0 for i in range(d_out)]
+                u, u_norm = _orthogonalize(cand, u_cols)
+                if u_norm > 1e-12:
+                    break
             sigma = 0.0
-        else:
-            u = [x / sigma for x in av]
 
         u_cols.append(u)
         s_vals.append(sigma)

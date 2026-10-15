@@ -38,6 +38,14 @@ def test_asvd_beats_weight_svd_under_skewed_channel_activations() -> None:
     assert mse_a < mse_w
     assert rank_for_param_budget(8, 8, 0.5) == 2
 
+    # Repeated/degenerate singular values (4x4 identity matrix) must reconstruct exactly at full rank
+    ident = [[1.0 if i == j else 0.0 for j in range(4)] for i in range(4)]
+    ident_recon = compress_weight_svd(ident, rank=4).reconstruct_matrix()
+    for i in range(4):
+        for j in range(4):
+            assert ident_recon[i][j] == pytest.approx(ident[i][j], abs=1e-9)
+
+
 
 def test_two_room_and_pusht_cem_planning() -> None:
     two_room = TwoRoomDoorwayEnv(wall_x=0.0, door_half_width=0.25, dt=0.3)
