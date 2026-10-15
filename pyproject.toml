@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "world-model-compression-mpc"
+version = "0.2.0"
+description = "Latent world-model compression via Weight SVD vs Activation-Aware SVD (ASVD), closed-loop CEM MPC planning on TwoRoom/PushT, and Hybrid Forward-KL + Elite-Classification operator distillation"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
