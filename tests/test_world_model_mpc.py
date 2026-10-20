@@ -152,3 +152,14 @@ def test_cli_benchmark_markdown_json_and_reproducibility(
         main(["--format", "invalid_fmt"])
 
 
+def test_summarize_compression_tradeoff() -> None:
+    from world_model_compression_mpc.__main__ import run_benchmark, summarize_compression_tradeoff
+
+    assert summarize_compression_tradeoff([])["total_benchmarks"] == 0
+    rows = run_benchmark(seed=42)
+    summary = summarize_compression_tradeoff(rows)
+    assert summary["total_benchmarks"] == 3
+    assert summary["all_converged"] is True
+    assert 0.0 <= summary["asvd_mse_ratio"] < 1.0
+
+

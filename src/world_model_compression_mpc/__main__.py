@@ -119,6 +119,25 @@ def format_markdown_table(rows: Sequence[Dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
+def summarize_compression_tradeoff(rows: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+    """Summarize benchmark pass count and ASVD vs WSVD MSE improvement ratio."""
+    if not rows:
+        return {"total_benchmarks": 0, "all_converged": False, "asvd_mse_ratio": 1.0}
+    asvd_row = next((r for r in rows if r.get("benchmark") == "activation_aware_svd_rank1"), None)
+    ratio = 1.0
+    if asvd_row and float(asvd_row.get("secondary_value", 0.0)) > 0:
+        ratio = round(float(asvd_row["score"]) / float(asvd_row["secondary_value"]), 4)
+    passing = sum(
+        1 for r in rows if r.get("status") in ("ASVD_SUPERIOR", "GOAL_REACHED", "CONVERGED")
+    )
+    return {
+        "total_benchmarks": len(rows),
+        "passing_benchmarks": passing,
+        "all_converged": passing == len(rows),
+        "asvd_mse_ratio": ratio,
+    }
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Run reproducible world-model-compression-mpc ASVD, CEM MPC, and distillation benchmarks."
