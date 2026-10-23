@@ -1,0 +1,29 @@
+{
+  "title": "WorldModelCompression-MPC: Activation-Aware SVD Truncation & Operator Distillation for Fast Model-Predictive Control",
+  "upload_type": "software",
+  "description": "WorldModelCompression-MPC is an applied reinforcement learning and planning package developed by the Computational Genomics & Agentic Systems (CGAS) Lab at Northwestern University. It provides Activation-Aware Singular Value Decomposition (ASVD) spectral truncation and Hybrid Forward-KL + Elite distillation of latent world models, accelerating Cross-Entropy Method (CEM) planning rollouts by 1.72x while retaining >96% of uncompressed policy reward.",
+  "creators": [
+    {
+      "name": "Azmi, Abdullah",
+      "affiliation": "Northwestern University, Department of Computer Science & NICO",
+      "orcid": "0009-0005-2720-3347"
+    }
+  ],
+  "keywords": [
+    "World Models",
+    "Model Predictive Control",
+    "Model Compression",
+    "Singular Value Decomposition",
+    "Activation-Aware SVD",
+    "Policy Distillation",
+    "Reinforcement Learning"
+  ],
+  "license": "Apache-2.0",
+  "related_identifiers": [
+    {
+      "identifier": "https://abdullahazmi.com/lab/",
+      "relation": "isDocumentedBy",
+      "scheme": "url"
+    }
+  ]
+}
